@@ -5,7 +5,12 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
+#include <time.h>
 #include "header.h"
+
+pthread_mutex_t	mutex_reader = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t	mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
 void* analyzer_thread() // ush1
 {
@@ -29,11 +34,58 @@ void* reader_thread()
 {
     while(1)
     {
-    reader_code();
-    sleep(1);
+        reader_code();
+        sleep(1);
 
     }
 
+}
+
+void* watchdog_thread()
+{
+
+    reader_inactive_time=0;
+    analyzer_inactive_time=0;
+
+    printer_inactive_time=0;
+
+
+    struct sigaction sa7;
+    sa7.sa_handler=watchdog_code_reader;
+    sigaction(SIGBUS, &sa7, NULL);
+    struct sigaction sa8;
+    sa8.sa_handler=watchdog_code_analyzer;
+    sigaction(SIGCONT, &sa8, NULL);
+    struct sigaction sa9;
+    sa9.sa_handler=watchdog_code_printer;
+    sigaction(SIGCLD, &sa9, NULL);
+
+    while(1)
+    {
+
+        pthread_mutex_lock(&mutex_reader);
+        reader_inactive_time++;
+        pthread_mutex_unlock(&mutex_reader);
+        pthread_mutex_lock(&mutex_analyzer);
+        analyzer_inactive_time++;
+        pthread_mutex_unlock(&mutex_analyzer);
+        pthread_mutex_lock(&mutex_printer);
+        printer_inactive_time++;
+        pthread_mutex_unlock(&mutex_printer);
+
+
+
+
+        if(reader_inactive_time>10 || analyzer_inactive_time>10 || printer_inactive_time>10)
+        {
+            printf("ZAWIESILO SIE! %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time); raise(SIGTERM);
+        }
+        else
+        {
+ //       printf(" %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time);
+        }
+        sleep(1);
+    }
 }
 
 void reader_code()
@@ -62,7 +114,9 @@ void reader_code()
                &rd.values[i][irq], &rd.values[i][softirq], &rd.values[i][steal], &rd.values[i][guest], &rd.values[i][guest_nice]);
     }
     fclose(file);
+    pthread_kill(watchdog_thr, SIGBUS); //printf(" sent signalR");
     pthread_kill(analyzer_thr, SIGUSR1);
+
 }
 
 
@@ -74,41 +128,63 @@ void analyzer_code()
     for(int i=0; i<=procno; i++)
     {
 
-PrevIdle = rd_old.values[i][idle];
-Idle = rd.values[i][idle];
+        PrevIdle = rd_old.values[i][idle];
+        Idle = rd.values[i][idle];
 
-PrevNonIdle = rd_old.values[i][user] + rd_old.values[i][nice] + rd_old.values[i][sys] + rd_old.values[i][irq] + rd_old.values[i][softirq] + rd_old.values[i][steal]+rd_old.values[i][iowait];
-NonIdle = rd.values[i][user] + rd.values[i][nice] + rd.values[i][sys] + rd.values[i][irq] + rd.values[i][softirq] + rd.values[i][steal]+ rd.values[i][iowait];
+        PrevNonIdle = rd_old.values[i][user] + rd_old.values[i][nice] + rd_old.values[i][sys] + rd_old.values[i][irq] + rd_old.values[i][softirq] + rd_old.values[i][steal]+rd_old.values[i][iowait];
+        NonIdle = rd.values[i][user] + rd.values[i][nice] + rd.values[i][sys] + rd.values[i][irq] + rd.values[i][softirq] + rd.values[i][steal]+ rd.values[i][iowait];
 
-PrevTotal = PrevIdle + PrevNonIdle;
-Total = Idle + NonIdle;
+        PrevTotal = PrevIdle + PrevNonIdle;
+        Total = Idle + NonIdle;
 
-totald = Total - PrevTotal;
-idled = Idle - PrevIdle;
+        totald = Total - PrevTotal;
+        idled = Idle - PrevIdle;
 
-CPU_Percentage[i] = 100.0*(totald - idled)/totald;
-pthread_kill(printer_thr, SIGUSR2);
+        CPU_Percentage[i] = 100.0*(totald - idled)/totald;
 
-}
+
+    }
+    pthread_kill(watchdog_thr, SIGCONT);// printf("sent signalA ");
+        pthread_kill(printer_thr, SIGUSR2);
 }
 
 
 void printer_code()
 {
-    system("clear");
+    //system("clear");
     for(int i=0; i<=procno; i++)
     {
-            printf("CPU: %s PERCENTAGE: %.2f\n", rd.cpuno[i],CPU_Percentage[i]);
+        printf("CPU: %s PERCENTAGE: %.2f\n", rd.cpuno[i],CPU_Percentage[i]);
     }
+    pthread_kill(watchdog_thr, SIGCLD); // printf(" sent signalP ");
 }
 
-void* watchdog_code()
+void watchdog_code_reader()
+{
+    pthread_mutex_lock(&mutex_reader);
+    reader_inactive_time=0;
+    pthread_mutex_unlock(&mutex_reader);
+ //   printf(" got signalR ");
+}
+
+void watchdog_code_analyzer()
+{
+    pthread_mutex_lock(&mutex_analyzer);
+    analyzer_inactive_time=0;
+    pthread_mutex_unlock(&mutex_analyzer);
+ //   printf(" got signalA ");
+}
+
+void watchdog_code_printer()
+{
+    pthread_mutex_lock(&mutex_printer);
+    printer_inactive_time=0;
+    pthread_mutex_unlock(&mutex_printer);
+ //   printf(" got signalP ");
+}
+
+void logger_code()
 {
 
 }
 
-void* logger_code()
-{
-
-}
- 
