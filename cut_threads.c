@@ -14,7 +14,6 @@ void* analyzer_thread()
     sa_analyzer.sa_handler=analyzer_code;
     sigaction(SIGUSR1, &sa_analyzer, NULL);
     while(1) sleep(1);
-    //analyzer_code();
 }
 
 void* printer_thread()
@@ -22,7 +21,6 @@ void* printer_thread()
     sa_printer.sa_handler=printer_code;
     sigaction(SIGUSR2, &sa_printer, NULL);
     while(1) sleep(1);
-    //printer_code();
 }
 
 void* reader_thread()

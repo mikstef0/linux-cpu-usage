@@ -42,7 +42,7 @@ int main(int argc, char  *argv[])
     rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old));
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
 
-    int a=0, b=0, c=0, d=0;
+    int thr_ret=1;
 
     sa_term.sa_handler=term;
     sigaction(SIGTERM, &sa_term, NULL);
@@ -50,14 +50,41 @@ int main(int argc, char  *argv[])
     sigaction(SIGINT, &sa_int, NULL);
 
 
-
-
-d=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
-    b=pthread_create(&analyzer_thr, NULL, analyzer_thread, NULL);
-    c=pthread_create(&printer_thr, NULL, printer_thread, NULL);
-    sleep(1);
-    a=pthread_create(&reader_thr, NULL, reader_thread, NULL);
- //   printf("%d %d %d", a,b,c);
+    thr_ret=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
+    if(thr_ret!=0) 
+    {
+        fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
+    } 
+    else 
+    {
+        thr_ret=1;
+    }
+    
+    thr_ret=pthread_create(&analyzer_thr, NULL, analyzer_thread, NULL);
+    if(thr_ret!=0) 
+    {
+        fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
+    } 
+    else 
+    {
+        thr_ret=1;
+    }
+    
+    thr_ret=pthread_create(&printer_thr, NULL, printer_thread, NULL);
+    if(thr_ret!=0) 
+    {
+        fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
+    } 
+    else 
+    {
+        thr_ret=1;
+    }
+    
+    thr_ret=pthread_create(&reader_thr, NULL, reader_thread, NULL);
+    if(thr_ret!=0) 
+    {
+        fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
+    } 
 
 
     while(terminate==0)
@@ -65,8 +92,7 @@ d=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
     sleep(1);
     }
 
-
-
+    
     return 0;
 }
 

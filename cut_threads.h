@@ -17,7 +17,6 @@ pthread_mutex_t mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
-
 int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
 
 struct sigaction sa_analyzer;
@@ -26,9 +25,6 @@ struct sigaction sa_reader_watchdog;
 struct sigaction sa_analyzer_watchdog;
 struct sigaction sa_printer_watchdog;
 
-
-
-
 void analyzer_code();
 void printer_code();
 void reader_code();
@@ -36,7 +32,6 @@ void watchdog_code_reader();
 void watchdog_code_analyzer();
 void watchdog_code_printer();
 void logger_code();
-
 
 void* analyzer_thread(); // ush1
 void* printer_thread(); //ush2
