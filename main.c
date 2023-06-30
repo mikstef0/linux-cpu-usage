@@ -8,19 +8,26 @@
 #include <time.h>
 #include "header.h"
 
+
+
+
+void term()
+{
+    terminate=1;
+    printf("SIGTERM encountered. Terminating...\n");
+}
+
+
 int main(int argc, char  *argv[])
 {
+    terminate=0;
     procno = sysconf(_SC_NPROCESSORS_ONLN);
 
     int a=0, b=0, c=0, d=0;
 
-/*
-    struct sigaction sa1;
-    sa1.sa_handler=&ush1;
-    sa1.sa_flags=SA_RESTART;
-    sigaction(SIGUSR1, &sa1, NULL);
-*/
-
+    struct sigaction sa_term;
+    sa_term.sa_handler=term;
+    sigaction(SIGTERM, &sa_term, NULL);
 
 
 
@@ -33,7 +40,7 @@ d=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
  //   printf("%d %d %d", a,b,c);
 
 
-    while(1)
+    while(terminate==0)
     {
     sleep(1);
     }
@@ -47,6 +54,7 @@ d=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
     pthread_join(printer_thr, NULL);
     pthread_join(watchdog_thr, NULL);
 
+    printf("Program has terminated.\n");
 
 
     return 0;

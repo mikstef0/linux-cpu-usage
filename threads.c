@@ -12,7 +12,7 @@ pthread_mutex_t	mutex_reader = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t	mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
-void* analyzer_thread() // ush1
+void* analyzer_thread()
 {
     struct sigaction sa1;
     sa1.sa_handler=analyzer_code;
@@ -21,7 +21,7 @@ void* analyzer_thread() // ush1
     //analyzer_code();
 }
 
-void* printer_thread() //ush2
+void* printer_thread()
 {
     struct sigaction sa2;
     sa2.sa_handler=printer_code;
@@ -43,10 +43,8 @@ void* reader_thread()
 
 void* watchdog_thread()
 {
-
     reader_inactive_time=0;
     analyzer_inactive_time=0;
-
     printer_inactive_time=0;
 
 
@@ -62,7 +60,6 @@ void* watchdog_thread()
 
     while(1)
     {
-
         pthread_mutex_lock(&mutex_reader);
         reader_inactive_time++;
         pthread_mutex_unlock(&mutex_reader);
@@ -76,13 +73,9 @@ void* watchdog_thread()
 
 
 
-        if(reader_inactive_time>10 || analyzer_inactive_time>10 || printer_inactive_time>10)
+        if(reader_inactive_time>4 || analyzer_inactive_time>4 || printer_inactive_time>4)
         {
             printf("ZAWIESILO SIE! %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time); raise(SIGTERM);
-        }
-        else
-        {
- //       printf(" %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time);
         }
         sleep(1);
     }
@@ -114,7 +107,7 @@ void reader_code()
                &rd.values[i][irq], &rd.values[i][softirq], &rd.values[i][steal], &rd.values[i][guest], &rd.values[i][guest_nice]);
     }
     fclose(file);
-    pthread_kill(watchdog_thr, SIGBUS); //printf(" sent signalR");
+    pthread_kill(watchdog_thr, SIGBUS);
     pthread_kill(analyzer_thr, SIGUSR1);
 
 }
@@ -144,19 +137,19 @@ void analyzer_code()
 
 
     }
-    pthread_kill(watchdog_thr, SIGCONT);// printf("sent signalA ");
-        pthread_kill(printer_thr, SIGUSR2);
+    pthread_kill(watchdog_thr, SIGCONT);
+    pthread_kill(printer_thr, SIGUSR2);
 }
 
 
 void printer_code()
 {
-    //system("clear");
+    system("clear");
     for(int i=0; i<=procno; i++)
     {
         printf("CPU: %s PERCENTAGE: %.2f\n", rd.cpuno[i],CPU_Percentage[i]);
     }
-    pthread_kill(watchdog_thr, SIGCLD); // printf(" sent signalP ");
+    pthread_kill(watchdog_thr, SIGCLD);
 }
 
 void watchdog_code_reader()
@@ -164,7 +157,6 @@ void watchdog_code_reader()
     pthread_mutex_lock(&mutex_reader);
     reader_inactive_time=0;
     pthread_mutex_unlock(&mutex_reader);
- //   printf(" got signalR ");
 }
 
 void watchdog_code_analyzer()
@@ -172,7 +164,6 @@ void watchdog_code_analyzer()
     pthread_mutex_lock(&mutex_analyzer);
     analyzer_inactive_time=0;
     pthread_mutex_unlock(&mutex_analyzer);
- //   printf(" got signalA ");
 }
 
 void watchdog_code_printer()
@@ -180,7 +171,6 @@ void watchdog_code_printer()
     pthread_mutex_lock(&mutex_printer);
     printer_inactive_time=0;
     pthread_mutex_unlock(&mutex_printer);
- //   printf(" got signalP ");
 }
 
 void logger_code()

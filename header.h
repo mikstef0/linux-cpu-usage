@@ -13,6 +13,8 @@
 #define guest 8
 #define guest_nice 9
 
+short int terminate;
+
 typedef struct procdata_struct
 {
     char cpuno[max_cores+1][6];
@@ -27,7 +29,6 @@ float CPU_Percentage[max_cores+1];
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 
 int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
-//FILE* file;
 
 void analyzer_code();
 void printer_code();
