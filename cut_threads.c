@@ -6,11 +6,13 @@
 #include <signal.h>
 #include <pthread.h>
 #include <time.h>
-#include "header.h"
+#include "cut_threads.h"
+#include "global.h"
+//#include "header.h"
 
-pthread_mutex_t	mutex_reader = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t	mutex_printer = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t mutex_reader = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
 void* analyzer_thread()
 {
@@ -92,19 +94,19 @@ void reader_code()
 
     for(int i=0; i<=procno; i++)
     {
-        rd_old.values[i][user]=rd.values[i][user];
-        rd_old.values[i][nice]=rd.values[i][nice];
-        rd_old.values[i][sys]=rd.values[i][sys];
-        rd_old.values[i][idle]=rd.values[i][idle];
-        rd_old.values[i][iowait]=rd.values[i][iowait];
-        rd_old.values[i][irq]=rd.values[i][irq];
-        rd_old.values[i][softirq]=rd.values[i][softirq];
-        rd_old.values[i][steal]=rd.values[i][steal];
-        rd_old.values[i][guest]=rd.values[i][guest];
-        rd_old.values[i][guest_nice]=rd.values[i][guest_nice];
+        rd_old[i].values[user]=rd[i].values[user];
+        rd_old[i].values[nice]=rd[i].values[nice];
+        rd_old[i].values[sys]=rd[i].values[sys];
+        rd_old[i].values[idle]=rd[i].values[idle];
+        rd_old[i].values[iowait]=rd[i].values[iowait];
+        rd_old[i].values[irq]=rd[i].values[irq];
+        rd_old[i].values[softirq]=rd[i].values[softirq];
+        rd_old[i].values[steal]=rd[i].values[steal];
+        rd_old[i].values[guest]=rd[i].values[guest];
+        rd_old[i].values[guest_nice]=rd[i].values[guest_nice];
 
-        fscanf(file, "%s %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", &rd.cpuno[i], &rd.values[i][user], &rd.values[i][nice], &rd.values[i][sys], &rd.values[i][idle], &rd.values[i][iowait],
-               &rd.values[i][irq], &rd.values[i][softirq], &rd.values[i][steal], &rd.values[i][guest], &rd.values[i][guest_nice]);
+        fscanf(file, "%s %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", &rd[i].cpuno, &rd[i].values[user], &rd[i].values[nice], &rd[i].values[sys], &rd[i].values[idle], &rd[i].values[iowait],
+               &rd[i].values[irq], &rd[i].values[softirq], &rd[i].values[steal], &rd[i].values[guest], &rd[i].values[guest_nice]);
     }
     fclose(file);
     pthread_kill(watchdog_thr, SIGBUS);
@@ -121,11 +123,11 @@ void analyzer_code()
     for(int i=0; i<=procno; i++)
     {
 
-        PrevIdle = rd_old.values[i][idle];
-        Idle = rd.values[i][idle];
+        PrevIdle = rd_old[i].values[idle];
+        Idle = rd[i].values[idle];
 
-        PrevNonIdle = rd_old.values[i][user] + rd_old.values[i][nice] + rd_old.values[i][sys] + rd_old.values[i][irq] + rd_old.values[i][softirq] + rd_old.values[i][steal]+rd_old.values[i][iowait];
-        NonIdle = rd.values[i][user] + rd.values[i][nice] + rd.values[i][sys] + rd.values[i][irq] + rd.values[i][softirq] + rd.values[i][steal]+ rd.values[i][iowait];
+        PrevNonIdle = rd_old[i].values[user] + rd_old[i].values[nice] + rd_old[i].values[sys] + rd_old[i].values[irq] + rd_old[i].values[softirq] + rd_old[i].values[steal]+rd_old[i].values[iowait];
+        NonIdle = rd[i].values[user] + rd[i].values[nice] + rd[i].values[sys] + rd[i].values[irq] + rd[i].values[softirq] + rd[i].values[steal]+ rd[i].values[iowait];
 
         PrevTotal = PrevIdle + PrevNonIdle;
         Total = Idle + NonIdle;
@@ -147,7 +149,7 @@ void printer_code()
     system("clear");
     for(int i=0; i<=procno; i++)
     {
-        printf("CPU: %s PERCENTAGE: %.2f\n", rd.cpuno[i],CPU_Percentage[i]);
+        printf("CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,CPU_Percentage[i]);
     }
     pthread_kill(watchdog_thr, SIGCLD);
 }

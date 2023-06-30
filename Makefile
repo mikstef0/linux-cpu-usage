@@ -7,7 +7,7 @@ ifeq ($(CC),clang)
 	options = $(cla_opt)
 endif
 
-cputr: main.c threads.c header.h
-	$(CC) main.c threads.c $(options) -std=c99 -o cputr
+cputr: main.c cut_threads.c cut_threads.h main.h
+	$(CC) main.c cut_threads.c $(options) -std=c99 -o cputr
 clean:
 	rm cputr
