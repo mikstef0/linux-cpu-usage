@@ -14,6 +14,9 @@
 short int terminate;
 long procno;
 
+struct sigaction sa_term;
+struct sigaction sa_int;
+
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 
 void* analyzer_thread(); // ush1

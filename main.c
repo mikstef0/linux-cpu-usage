@@ -11,11 +11,25 @@
 
 
 
-
 void term()
 {
     terminate=1;
-    printf("SIGTERM encountered. Terminating...\n");
+    printf("\nSIGTERM/SIGINT encountered. Terminating...\n");
+    pthread_cancel(reader_thr);
+    pthread_cancel(analyzer_thr);
+    pthread_cancel(printer_thr);
+    pthread_cancel(watchdog_thr);
+    pthread_join(reader_thr, NULL);
+    pthread_join(analyzer_thr, NULL);
+    pthread_join(printer_thr, NULL);
+    pthread_join(watchdog_thr, NULL);
+
+    free(rd);
+    free(rd_old);
+    free(CPU_Percentage);
+
+    printf("Program has terminated.\n");
+    exit(0);
 }
 
 
@@ -30,9 +44,11 @@ int main(int argc, char  *argv[])
 
     int a=0, b=0, c=0, d=0;
 
-    struct sigaction sa_term;
     sa_term.sa_handler=term;
-    sigaction(SIGINT, &sa_term, NULL);
+    sigaction(SIGTERM, &sa_term, NULL);
+    sa_int.sa_handler=term;
+    sigaction(SIGINT, &sa_int, NULL);
+
 
 
 
@@ -49,20 +65,6 @@ d=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
     sleep(1);
     }
 
-    pthread_cancel(reader_thr);
-    pthread_cancel(analyzer_thr);
-    pthread_cancel(printer_thr);
-    pthread_cancel(watchdog_thr);
-    pthread_join(reader_thr, NULL);
-    pthread_join(analyzer_thr, NULL);
-    pthread_join(printer_thr, NULL);
-    pthread_join(watchdog_thr, NULL);
-
-    free(rd);
-    free(rd_old);
-    free(CPU_Percentage);
-
-    printf("Program has terminated.\n");
 
 
     return 0;

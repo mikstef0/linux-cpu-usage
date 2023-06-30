@@ -8,26 +8,19 @@
 #include <time.h>
 #include "cut_threads.h"
 #include "global.h"
-//#include "header.h"
-
-//pthread_mutex_t mutex_reader = PTHREAD_MUTEX_INITIALIZER;
-//pthread_mutex_t mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
-//pthread_mutex_t mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
 void* analyzer_thread()
 {
-    struct sigaction sa1;
-    sa1.sa_handler=analyzer_code;
-    sigaction(SIGUSR1, &sa1, NULL);
+    sa_analyzer.sa_handler=analyzer_code;
+    sigaction(SIGUSR1, &sa_analyzer, NULL);
     while(1) sleep(1);
     //analyzer_code();
 }
 
 void* printer_thread()
 {
-    struct sigaction sa2;
-    sa2.sa_handler=printer_code;
-    sigaction(SIGUSR2, &sa2, NULL);
+    sa_printer.sa_handler=printer_code;
+    sigaction(SIGUSR2, &sa_printer, NULL);
     while(1) sleep(1);
     //printer_code();
 }
@@ -38,9 +31,7 @@ void* reader_thread()
     {
         reader_code();
         sleep(1);
-
     }
-
 }
 
 void* watchdog_thread()
@@ -49,16 +40,12 @@ void* watchdog_thread()
     analyzer_inactive_time=0;
     printer_inactive_time=0;
 
-
-    struct sigaction sa7;
-    sa7.sa_handler=watchdog_code_reader;
-    sigaction(SIGBUS, &sa7, NULL);
-    struct sigaction sa8;
-    sa8.sa_handler=watchdog_code_analyzer;
-    sigaction(SIGCONT, &sa8, NULL);
-    struct sigaction sa9;
-    sa9.sa_handler=watchdog_code_printer;
-    sigaction(SIGCLD, &sa9, NULL);
+    sa_reader_watchdog.sa_handler=watchdog_code_reader;
+    sigaction(SIGBUS, &sa_reader_watchdog, NULL);
+    sa_analyzer_watchdog.sa_handler=watchdog_code_analyzer;
+    sigaction(SIGCONT, &sa_analyzer_watchdog, NULL);
+    sa_printer_watchdog.sa_handler=watchdog_code_printer;
+    sigaction(SIGCLD, &sa_printer_watchdog, NULL);
 
     while(1)
     {
@@ -71,8 +58,6 @@ void* watchdog_thread()
         pthread_mutex_lock(&mutex_printer);
         printer_inactive_time++;
         pthread_mutex_unlock(&mutex_printer);
-
-
 
 
         if(reader_inactive_time>4 || analyzer_inactive_time>4 || printer_inactive_time>4)
