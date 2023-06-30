@@ -8,7 +8,6 @@
 #include <time.h>
 #include "main.h"
 #include "global.h"
-//#include "header.h"
 
 
 
