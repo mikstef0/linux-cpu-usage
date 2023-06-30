@@ -14,7 +14,7 @@
 void term()
 {
     terminate=1;
-    printf("\nSIGTERM/SIGINT encountered. Terminating...\n");
+    fprintf(stdout, "\nSIGTERM/SIGINT encountered. Terminating...\n");
     pthread_cancel(reader_thr);
     pthread_cancel(analyzer_thr);
     pthread_cancel(printer_thr);
@@ -28,7 +28,7 @@ void term()
     free(rd_old);
     free(CPU_Percentage);
 
-    printf("Program has terminated.\n");
+    fprintf(stdout, "Program has terminated.\n");
     exit(0);
 }
 

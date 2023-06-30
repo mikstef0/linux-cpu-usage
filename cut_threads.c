@@ -60,7 +60,7 @@ void* watchdog_thread()
 
         if(reader_inactive_time>4 || analyzer_inactive_time>4 || printer_inactive_time>4)
         {
-            printf("ZAWIESILO SIE! %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time); raise(SIGTERM);
+            fprintf(stdout, "Program has hung up :(  %d %d %d\n", reader_inactive_time, analyzer_inactive_time, printer_inactive_time); raise(SIGTERM);
         }
         sleep(1);
     }
@@ -132,7 +132,7 @@ void printer_code()
     system("clear");
     for(int i=0; i<=procno; i++)
     {
-        printf("CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,CPU_Percentage[i]);
+        fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,CPU_Percentage[i]);
     }
     pthread_kill(watchdog_thr, SIGCLD);
 }
