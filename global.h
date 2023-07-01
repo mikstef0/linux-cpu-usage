@@ -12,7 +12,6 @@
 #define guest_nice 9
 
 
-
 struct procdata_struct
 {
     char cpuno[6];

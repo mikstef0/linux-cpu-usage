@@ -45,13 +45,12 @@ void term()
     free(CPU_Percentage);
 
     fprintf(stdout, "Program has terminated.\n");
-    test(2);
-    exit(0);
+    
 }
 
 
 
-int main(int argc, char  *argv[])
+int main()
 {
     
     terminate=0;
@@ -62,9 +61,9 @@ int main(int argc, char  *argv[])
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
 
 
-    sa_term.sa_handler=term;
+    sa_term.sa_handler=(void(*)(int))term;
     sigaction(SIGTERM, &sa_term, NULL);
-    sa_int.sa_handler=term;
+    sa_int.sa_handler=(void(*)(int))term;
     sigaction(SIGINT, &sa_int, NULL);
 
  
@@ -74,7 +73,7 @@ int main(int argc, char  *argv[])
     test(1);
     }
 
-    
+    test(2);
     return 0;
 }
 

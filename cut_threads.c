@@ -11,14 +11,14 @@
 
 void* analyzer_thread()
 {
-    sa_analyzer.sa_handler=analyzer_code;
+    sa_analyzer.sa_handler=(void(*)(int))analyzer_code;
     sigaction(SIGUSR1, &sa_analyzer, NULL);
     while(1) sleep(1);
 }
 
 void* printer_thread()
 {
-    sa_printer.sa_handler=printer_code;
+    sa_printer.sa_handler=(void(*)(int))printer_code;
     sigaction(SIGUSR2, &sa_printer, NULL);
     while(1) sleep(1);
 }
@@ -38,11 +38,11 @@ void* watchdog_thread()
     analyzer_inactive_time=0;
     printer_inactive_time=0;
 
-    sa_reader_watchdog.sa_handler=watchdog_code_reader;
+    sa_reader_watchdog.sa_handler=(void(*)(int))watchdog_code_reader;
     sigaction(SIGBUS, &sa_reader_watchdog, NULL);
-    sa_analyzer_watchdog.sa_handler=watchdog_code_analyzer;
+    sa_analyzer_watchdog.sa_handler=(void(*)(int))watchdog_code_analyzer;
     sigaction(SIGCONT, &sa_analyzer_watchdog, NULL);
-    sa_printer_watchdog.sa_handler=watchdog_code_printer;
+    sa_printer_watchdog.sa_handler=(void(*)(int))watchdog_code_printer;
     sigaction(SIGCLD, &sa_printer_watchdog, NULL);
 
     while(1)
@@ -88,7 +88,7 @@ void reader_code()
         rd_old[i].values[guest]=rd[i].values[guest];
         rd_old[i].values[guest_nice]=rd[i].values[guest_nice];
 
-        fscanf(file, "%s %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", &rd[i].cpuno, &rd[i].values[user], &rd[i].values[nice], &rd[i].values[sys], &rd[i].values[idle], &rd[i].values[iowait],
+        fscanf(file, "%s %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", rd[i].cpuno, &rd[i].values[user], &rd[i].values[nice], &rd[i].values[sys], &rd[i].values[idle], &rd[i].values[iowait],
                &rd[i].values[irq], &rd[i].values[softirq], &rd[i].values[steal], &rd[i].values[guest], &rd[i].values[guest_nice]);
     }
     fclose(file);
@@ -118,7 +118,7 @@ void analyzer_code()
         totald = Total - PrevTotal;
         idled = Idle - PrevIdle;
 
-        CPU_Percentage[i] = 100.0*(totald - idled)/totald;
+        CPU_Percentage[i] = (float)100.0*(totald - idled)/totald;
 
 
     }
@@ -132,7 +132,7 @@ void printer_code()
     system("clear");
     for(int i=0; i<=procno; i++)
     {
-        fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,CPU_Percentage[i]);
+        fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,(double)CPU_Percentage[i]);
     }
     pthread_kill(watchdog_thr, SIGCLD);
 }

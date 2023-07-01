@@ -1,5 +1,5 @@
 gcc_opt = -pthread -Wall -Wextra
-cla_opt = -pthread -Weverything
+cla_opt = -pthread -Weverything -Wno-missing-variable-declarations -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-padded
 ifeq ($(CC),gcc)
 	options = $(gcc_opt)
 endif

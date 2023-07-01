@@ -12,18 +12,18 @@
 #define guest_nice 9
 
 short int terminate;
-long procno;
 
 struct sigaction sa_term;
 struct sigaction sa_int;
 
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 
-void* analyzer_thread(); // ush1
-void* printer_thread(); //ush2
-void* reader_thread();
-void* watchdog_thread();
-void* logger_thread();
+void* analyzer_thread(void); 
+void* printer_thread(void);
+void* reader_thread(void);
+void* watchdog_thread(void);
+void* logger_thread(void);
+void term(void);
 
 
 #endif

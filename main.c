@@ -9,8 +9,6 @@
 #include "main.h"
 #include "global.h"
 
-
-
 void term()
 {
     terminate=1;
@@ -29,28 +27,27 @@ void term()
     free(CPU_Percentage);
 
     fprintf(stdout, "Program has terminated.\n");
-    exit(0);
 }
 
 
-int main(int argc, char  *argv[])
+int main()
 {
     terminate=0;
     procno = sysconf(_SC_NPROCESSORS_ONLN);
 
-    rd=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd));
+    rd=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd)); 
     rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old));
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
 
     int thr_ret=1;
 
-    sa_term.sa_handler=term;
+    sa_term.sa_handler=(void(*)(int))term;
     sigaction(SIGTERM, &sa_term, NULL);
-    sa_int.sa_handler=term;
+    sa_int.sa_handler=(void(*)(int))term;
     sigaction(SIGINT, &sa_int, NULL);
 
 
-    thr_ret=pthread_create(&watchdog_thr, NULL, watchdog_thread, NULL);
+    thr_ret=pthread_create(&watchdog_thr, NULL, (void *(*)(void *))watchdog_thread, NULL);
     if(thr_ret!=0) 
     {
         fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
@@ -60,7 +57,7 @@ int main(int argc, char  *argv[])
         thr_ret=1;
     }
     
-    thr_ret=pthread_create(&analyzer_thr, NULL, analyzer_thread, NULL);
+    thr_ret=pthread_create(&analyzer_thr, NULL, (void *(*)(void *))analyzer_thread, NULL);
     if(thr_ret!=0) 
     {
         fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
@@ -70,7 +67,7 @@ int main(int argc, char  *argv[])
         thr_ret=1;
     }
     
-    thr_ret=pthread_create(&printer_thr, NULL, printer_thread, NULL);
+    thr_ret=pthread_create(&printer_thr, NULL, (void *(*)(void *))printer_thread, NULL);
     if(thr_ret!=0) 
     {
         fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 
@@ -80,7 +77,7 @@ int main(int argc, char  *argv[])
         thr_ret=1;
     }
     
-    thr_ret=pthread_create(&reader_thr, NULL, reader_thread, NULL);
+    thr_ret=pthread_create(&reader_thr, NULL, (void *(*)(void *))reader_thread, NULL);
     if(thr_ret!=0) 
     {
         fprintf(stderr, "Error! %d", thr_ret); raise(SIGTERM); 

@@ -25,19 +25,19 @@ struct sigaction sa_reader_watchdog;
 struct sigaction sa_analyzer_watchdog;
 struct sigaction sa_printer_watchdog;
 
-void analyzer_code();
-void printer_code();
-void reader_code();
-void watchdog_code_reader();
-void watchdog_code_analyzer();
-void watchdog_code_printer();
-void logger_code();
+void analyzer_code(void);
+void printer_code(void);
+void reader_code(void);
+void watchdog_code_reader(void);
+void watchdog_code_analyzer(void);
+void watchdog_code_printer(void);
+void logger_code(void);
 
-void* analyzer_thread(); // ush1
-void* printer_thread(); //ush2
-void* reader_thread();
-void* watchdog_thread();
-void* logger_thread();
+void* analyzer_thread(void); // ush1
+void* printer_thread(void); //ush2
+void* reader_thread(void);
+void* watchdog_thread(void);
+void* logger_thread(void);
 
 
 #endif
