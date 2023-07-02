@@ -83,10 +83,11 @@ int main()
 
 void term()
 {
-    terminate=1;
-    fprintf(stdout, "\nSIGTERM/SIGINT encountered. Terminating...\n");
     sprintf(logs, "SIGINT/SIGTERM encountered. Terminating...\n");
     raise(SIGALRM);
+    terminate=1;
+    fprintf(stdout, "\nSIGTERM/SIGINT encountered. Terminating...\n");
+
     pthread_cancel(reader_thr);
     pthread_cancel(analyzer_thr);
     pthread_cancel(printer_thr);

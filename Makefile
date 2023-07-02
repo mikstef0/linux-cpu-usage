@@ -1,7 +1,7 @@
 CFLAGS := -pthread -Wall -Wextra
 
 ifeq ($(CC),gcc)
-    CFLAGS += -Wno-missing-variable-declarations
+    CFLAGS +=
 endif
 
 ifeq ($(CC),clang)
