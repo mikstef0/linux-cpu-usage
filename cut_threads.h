@@ -1,44 +1,33 @@
-#ifndef HEADER_H
+#ifndef CUT_THREADS_H
+#define CUT_THREADS_H
 
-#define user 0
-#define nice 1
-#define sys 2
-#define idle 3
-#define iowait 4
-#define irq 5
-#define softirq 6
-#define steal 7
-#define guest 8
-#define guest_nice 9
-
-
-pthread_mutex_t mutex_reader = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex_printer = PTHREAD_MUTEX_INITIALIZER;
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <pthread.h>
+#include <time.h>
+#include "cut_queue.h"
+#include "global.h"
 
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
 
-struct sigaction sa_analyzer;
-struct sigaction sa_printer;
-struct sigaction sa_reader_watchdog;
-struct sigaction sa_analyzer_watchdog;
-struct sigaction sa_printer_watchdog;
+struct sigaction sa_analyzer; // signal handling struct for reader->analyzer signal
+struct sigaction sa_printer; // signal handling struct for analyzer->printer signal
+struct sigaction sa_reader_watchdog; // signal handling struct for reader->watchdog signal
+struct sigaction sa_analyzer_watchdog; // signal handling struct for analyzer->watchdog signal
+struct sigaction sa_printer_watchdog; // signal handling struct for printer->watchdog signal
 
-void analyzer_code(void);
-void printer_code(void);
-void reader_code(void);
-void watchdog_code_reader(void);
-void watchdog_code_analyzer(void);
-void watchdog_code_printer(void);
-void logger_code(void);
-
-void* analyzer_thread(void); // ush1
-void* printer_thread(void); //ush2
-void* reader_thread(void);
-void* watchdog_thread(void);
-void* logger_thread(void);
-
+void analyzer_code(void); // analyzer logic
+void printer_code(void); // printer logic
+void reader_code(void); // reader logic
+void watchdog_code_reader(void); // watchdog logic for reader
+void watchdog_code_analyzer(void); // watchdog logic for analyzer
+void watchdog_code_printer(void); // watchdog logic for printer
+void logger_code(void); // logger logic
 
 #endif
 

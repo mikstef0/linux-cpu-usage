@@ -1,13 +1,8 @@
-#include <stdio.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <pthread.h>
-#include <time.h>
 #include "cut_threads.h"
-#include "global.h"
+
+static pthread_mutex_t mutex_reader = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_analyzer = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_printer = PTHREAD_MUTEX_INITIALIZER;
 
 void* analyzer_thread()
 {
@@ -20,7 +15,7 @@ void* printer_thread()
 {
     sa_printer.sa_handler=(void(*)(int))printer_code;
     sigaction(SIGUSR2, &sa_printer, NULL);
-    while(1) sleep(1);
+    while(1) pause();
 }
 
 void* reader_thread()
@@ -77,21 +72,12 @@ void reader_code()
 
     for(int i=0; i<=procno; i++)
     {
-        rd_old[i].values[user]=rd[i].values[user];
-        rd_old[i].values[nice]=rd[i].values[nice];
-        rd_old[i].values[sys]=rd[i].values[sys];
-        rd_old[i].values[idle]=rd[i].values[idle];
-        rd_old[i].values[iowait]=rd[i].values[iowait];
-        rd_old[i].values[irq]=rd[i].values[irq];
-        rd_old[i].values[softirq]=rd[i].values[softirq];
-        rd_old[i].values[steal]=rd[i].values[steal];
-        rd_old[i].values[guest]=rd[i].values[guest];
-        rd_old[i].values[guest_nice]=rd[i].values[guest_nice];
-
         fscanf(file, "%s %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld", rd[i].cpuno, &rd[i].values[user], &rd[i].values[nice], &rd[i].values[sys], &rd[i].values[idle], &rd[i].values[iowait],
                &rd[i].values[irq], &rd[i].values[softirq], &rd[i].values[steal], &rd[i].values[guest], &rd[i].values[guest_nice]);
+        dqueue_enq(&data_queue[i],rd[i]);
     }
     fclose(file);
+
     pthread_kill(watchdog_thr, SIGBUS);
     pthread_kill(analyzer_thr, SIGUSR1);
 
@@ -102,9 +88,14 @@ void analyzer_code()
 {
     long PrevIdle, Idle, PrevNonIdle, NonIdle, PrevTotal, Total, totald, idled;
 
-
     for(int i=0; i<=procno; i++)
     {
+        strcpy(rd_old[i].cpuno, rd[i].cpuno);
+        for(int j=0;j<10;j++)
+        {
+            rd_old[i].values[j]=rd[i].values[j];
+        }
+        rd[i]=dqueue_deq(&data_queue[i]);
 
         PrevIdle = rd_old[i].values[idle];
         Idle = rd[i].values[idle];
@@ -132,7 +123,8 @@ void printer_code()
     system("clear");
     for(int i=0; i<=procno; i++)
     {
-        fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,(double)CPU_Percentage[i]);
+    if(rd[i].cpuno[0]=='c')
+       fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd[i].cpuno,(double)CPU_Percentage[i]);
     }
     pthread_kill(watchdog_thr, SIGCLD);
 }
