@@ -15,6 +15,7 @@ void term(void);
 short int terminate; // SIGTERM/SIGINT catched-signalisation value
 struct sigaction sa_term; // signal handling struct for SIGTERM
 struct sigaction sa_int; // signal handling struct for SIGINT
+extern int errno;
 
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 
@@ -28,7 +29,6 @@ int main()
     rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old)); // memory for previous values of above
     rd2=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd2)); // memory for data read from queue and analyzed/printed
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
-
     data_queue=(dq*)malloc((1+procno)*sizeof(*data_queue));
 
     sa_term.sa_handler=(void(*)(int))term;
@@ -91,10 +91,12 @@ void term()
     pthread_cancel(analyzer_thr);
     pthread_cancel(printer_thr);
     pthread_cancel(watchdog_thr);
+    pthread_cancel(logger_thr);
     pthread_join(reader_thr, NULL);
     pthread_join(analyzer_thr, NULL);
     pthread_join(printer_thr, NULL);
     pthread_join(watchdog_thr, NULL);
+    pthread_join(logger_thr, NULL);
 
     free(rd);
     free(rd_old);
