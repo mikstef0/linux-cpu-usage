@@ -1,15 +1,29 @@
-gcc_opt = -pthread -Wall -Wextra
-cla_opt = -pthread -Weverything -Wno-missing-variable-declarations -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-padded
+CFLAGS := -pthread -Wall -Wextra
+
 ifeq ($(CC),gcc)
-	options = $(gcc_opt)
-endif
-ifeq ($(CC),clang)
-	options = $(cla_opt)
+    CFLAGS += -Wno-missing-variable-declarations
 endif
 
-cputr: main.c cut_threads.c cut_threads.h main.h global.h
-	$(CC) main.c cut_threads.c $(options) -std=c99 -o cputr
-test: main_test.c cut_threads.c cut_threads.h main.h global.h
-	$(CC) main_test.c $(options) -std=c99 -o test
+ifeq ($(CC),clang)
+    CFLAGS += -Weverything -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-padded
+endif
+
+SRCS := main.c cut_threads.c cut_queue.c
+OBJS := $(SRCS:.c=.o)
+HEADERS := cut_threads.h global.h cut_queue.h
+
+.PHONY: all clean
+
+all: cputr test
+
+cputr: $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS) -std=c99 -o cputr
+
+test: main_test.c $(OBJS)
+	$(CC) main_test.c $(CFLAGS) -std=c99 -o test
+
+$(OBJS): $(SRCS) $(HEADERS)
+	$(CC) $(CFLAGS) -std=c99 -c $(SRCS)
+
 clean:
-	rm cputr
+	rm -f cputr test $(OBJS)
