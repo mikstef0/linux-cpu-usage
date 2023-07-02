@@ -17,13 +17,13 @@ HEADERS := cut_threads.h global.h cut_queue.h
 all: cputr test
 
 cputr: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -std=c99 -o cputr
+	$(CC) $(OBJS) $(CFLAGS) -std=c11 -o cputr
 
 test: main_test.c $(OBJS)
-	$(CC) main_test.c $(CFLAGS) -std=c99 -o test
+	$(CC) main_test.c $(CFLAGS) -std=c11 -o test
 
 $(OBJS): $(SRCS) $(HEADERS)
-	$(CC) $(CFLAGS) -std=c99 -c $(SRCS)
+	$(CC) $(CFLAGS) -std=c11 -c $(SRCS)
 
 clean:
 	rm -f cputr test $(OBJS)
