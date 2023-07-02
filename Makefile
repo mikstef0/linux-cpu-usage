@@ -5,7 +5,7 @@ ifeq ($(CC),gcc)
 endif
 
 ifeq ($(CC),clang)
-    CFLAGS += -Weverything -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-padded
+    CFLAGS += -Weverything -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-padded -Wno-redundant-parens -Wno-strict-prototypes -Wno-missing-noreturn -Wno-missing-variable-declarations
 endif
 
 SRCS := main.c cut_threads.c cut_queue.c

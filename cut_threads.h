@@ -15,7 +15,7 @@
 #define MAX_INACTIVE_TIME 4
 
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
-int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
+static int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
 
 struct sigaction sa_analyzer; // signal handling struct for reader->analyzer signal
 struct sigaction sa_printer; // signal handling struct for analyzer->printer signal

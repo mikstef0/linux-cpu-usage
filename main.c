@@ -12,7 +12,7 @@
 
 void term(void);
 
-short int terminate; // SIGTERM/SIGINT catched-signalisation value
+static short int terminate; // SIGTERM/SIGINT catched-signalisation value
 struct sigaction sa_term; // signal handling struct for SIGTERM
 struct sigaction sa_int; // signal handling struct for SIGINT
 extern int errno;

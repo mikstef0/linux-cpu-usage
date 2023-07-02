@@ -138,7 +138,7 @@ void analyzer_code()
 
 void printer_code()
 {
-    system("clear");
+    //system("clear");
     for(int i=0; i<=procno; i++)
     {
         if(rd2[i].cpuno[0]=='c')

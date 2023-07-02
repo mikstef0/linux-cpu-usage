@@ -39,7 +39,7 @@ dq *data_queue; // pointer for /proc/stat read data queue
 float *CPU_Percentage;
 long procno; // number of CPUs / CPU cores
 
-char logs[100];
+static char logs[100];
 
 
 #endif
