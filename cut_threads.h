@@ -12,6 +12,8 @@
 #include "cut_queue.h"
 #include "global.h"
 
+#define MAX_INACTIVE_TIME 4
+
 pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
 int reader_inactive_time, analyzer_inactive_time, printer_inactive_time;
 
@@ -20,6 +22,7 @@ struct sigaction sa_printer; // signal handling struct for analyzer->printer sig
 struct sigaction sa_reader_watchdog; // signal handling struct for reader->watchdog signal
 struct sigaction sa_analyzer_watchdog; // signal handling struct for analyzer->watchdog signal
 struct sigaction sa_printer_watchdog; // signal handling struct for printer->watchdog signal
+struct sigaction sa_logger; // signal handling struct for logging trigger signal
 
 void analyzer_code(void); // analyzer logic
 void printer_code(void); // printer logic

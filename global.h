@@ -32,18 +32,13 @@ typedef struct {
     int q_rear;
 } dq; // /proc/stat data queue
 
-typedef struct {
-    struct procdata_struct data[MAX_Q_SIZE];
-    int q_front;
-    int q_rear;
-} pq; // cpu percentage queue
-
-struct procdata_struct *rd, *rd_old;
+struct procdata_struct *rd, *rd_old, *rd2;
 dq *data_queue; // pointer for /proc/stat read data queue
-pq *proc_queue; // pointer for cpu percentage values queue
 
 float *CPU_Percentage;
 long procno; // number of CPUs / CPU cores
+
+char logs[100];
 
 
 #endif

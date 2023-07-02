@@ -25,10 +25,10 @@ int main()
 
     rd=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd)); // memory for data read from /proc/stat
     rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old)); // memory for previous values of above
+    rd2=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd2)); // memory for data read from queue and analyzed/printed
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
-
+    
     data_queue=(dq*)malloc((1+procno)*sizeof(*data_queue));
-    proc_queue=(pq*)malloc((1+procno)*sizeof(*proc_queue));
 
     int thr_ret=1;
 
@@ -42,27 +42,42 @@ int main()
     fprintf(stderr, "Error creating watchdog thread! %d", thr_ret);
     raise(SIGTERM);
     }
+    
+    if(pthread_create(&logger_thr, NULL, (void *(*)(void *))logger_thread, NULL))
+    if(thr_ret!=0)
+    {
+        fprintf(stderr, "Error creating logger thread! %d", thr_ret);
+        raise(SIGTERM);
+    }
 
     if(pthread_create(&analyzer_thr, NULL, (void *(*)(void *))analyzer_thread, NULL))
     if(thr_ret!=0)
-    {
-        fprintf(stderr, "Error creating analyzer thread! %d", thr_ret);
+    {   
+        sprintf(logs, "Error creating analyzer thread! %d\n", thr_ret);
+        raise(SIGALRM);
+        fprintf(stderr, "Error creating analyzer thread! %d\n", thr_ret);
         raise(SIGTERM);
     }
 
     if(pthread_create(&printer_thr, NULL, (void *(*)(void *))printer_thread, NULL))
     if(thr_ret!=0)
     {
-        fprintf(stderr, "Error creating printer thread! %d", thr_ret);
+        sprintf(logs, "Error creating printer thread! %d\n", thr_ret);
+        raise(SIGALRM);
+        fprintf(stderr, "Error creating printer thread! %d\n", thr_ret);
         raise(SIGTERM);
     }
 
     if(pthread_create(&reader_thr, NULL, (void *(*)(void *))reader_thread, NULL))
     if(thr_ret!=0)
     {
-        fprintf(stderr, "Error creating reader thread! %d", thr_ret);
+        sprintf(logs, "Error creating reader thread! %d\n", thr_ret);
+        raise(SIGALRM);
+        fprintf(stderr, "Error creating reader thread! %d\n", thr_ret);
         raise(SIGTERM);
     }
+    
+
 
     while(terminate==0)
     {
@@ -77,6 +92,8 @@ void term()
 {
     terminate=1;
     fprintf(stdout, "\nSIGTERM/SIGINT encountered. Terminating...\n");
+    sprintf(logs, "SIGINT/SIGTERM encountered. Terminating...\n");
+    raise(SIGALRM);
     pthread_cancel(reader_thr);
     pthread_cancel(analyzer_thr);
     pthread_cancel(printer_thr);
@@ -88,9 +105,9 @@ void term()
 
     free(rd);
     free(rd_old);
+    free(rd2);
     free(CPU_Percentage);
     free(data_queue);
-    free(proc_queue);
 
     fprintf(stdout, "Program has terminated.\n");
     exit(0);
