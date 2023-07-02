@@ -7,23 +7,45 @@
 #include <pthread.h>
 #include <time.h>
 #include <assert.h>
-#include "main.h"
 #include "global.h"
 
 
-void test(int i)
+void term(void);
+void test(short int i);
+
+short int terminate;
+struct sigaction sa_term;
+struct sigaction sa_int;
+
+struct procdata_struct *rd, *rd_old, *rd2;
+dq *data_queue;
+
+pthread_t reader_thr, analyzer_thr, printer_thr, watchdog_thr, logger_thr;
+
+int main()
 {
-    if(i==1)
+    terminate=0;
+    procno = sysconf(_SC_NPROCESSORS_ONLN);
+
+    rd=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd));
+    rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old));
+    CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
+
+    sa_term.sa_handler=(void(*)(int))term;
+    sigaction(SIGTERM, &sa_term, NULL);
+    sa_int.sa_handler=(void(*)(int))term;
+    sigaction(SIGINT, &sa_int, NULL);
+
+
+    while(terminate==0)
     {
-        fprintf(stdout, "\n** Test stared. Sigterm is being sent. **\n");
-        raise(SIGTERM);
+    sleep(1);
+    test(1);
     }
-    if(i==2)
-    {
-        assert(terminate==1);
-        fprintf(stdout, "\n** Test PASSED. Sigterm was caught. **\n");
-    }
+
+    return 0;
 }
+
 
 void term()
 {
@@ -40,39 +62,25 @@ void term()
 
     free(rd);
     free(rd_old);
+    free(rd2);
     free(CPU_Percentage);
 
     fprintf(stdout, "Program has terminated.\n");
     test(2);
-    exit(0)
+    exit(0);
 }
 
-
-
-int main()
+void test(short int i)
 {
-
-    terminate=0;
-    procno = sysconf(_SC_NPROCESSORS_ONLN);
-
-    rd=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd));
-    rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old));
-    CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
-
-
-    sa_term.sa_handler=(void(*)(int))term;
-    sigaction(SIGTERM, &sa_term, NULL);
-    sa_int.sa_handler=(void(*)(int))term;
-    sigaction(SIGINT, &sa_int, NULL);
-
-
-    while(terminate==0)
+    if(i==1)
     {
-    sleep(1);
-    test(1);
+        fprintf(stdout, "\n** Test stared. Sigterm is being sent. **\n");
+        raise(SIGTERM);
     }
-
-
-    return 0;
+    if(i==2)
+    {
+        assert(terminate==1);
+        fprintf(stdout, "\n** Test PASSED. Sigterm was caught. **\n");
+    }
 }
 

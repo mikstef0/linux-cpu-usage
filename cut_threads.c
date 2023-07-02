@@ -10,7 +10,7 @@ void* analyzer_thread()
     sigaction(SIGUSR1, &sa_analyzer, NULL);
     while(1)
     {
-    pause();
+        pause();
     }
 }
 
@@ -20,7 +20,7 @@ void* printer_thread()
     sigaction(SIGUSR2, &sa_printer, NULL);
     while(1)
     {
-    pause();
+        pause();
     }
 }
 
@@ -75,7 +75,7 @@ void* logger_thread()
     sigaction(SIGALRM, &sa_logger, NULL);
     while(1)
     {
-    pause();
+        pause();
     }
 }
 
@@ -142,11 +142,11 @@ void printer_code()
     for(int i=0; i<=procno; i++)
     {
         if(rd2[i].cpuno[0]=='c')
-        fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd2[i].cpuno,(double)CPU_Percentage[i]);
+            fprintf(stdout,"CPU: %s PERCENTAGE: %.2f\n", rd2[i].cpuno,(double)CPU_Percentage[i]);
         else
         {
-        sprintf(logs, "Error printing CPU usage for CPU: %s.\n", rd2[i].cpuno);
-        raise(SIGALRM);
+            sprintf(logs, "Error printing CPU usage for CPU: %s.\n", rd2[i].cpuno);
+            raise(SIGALRM);
         }
     }
     pthread_kill(watchdog_thr, SIGCLD);

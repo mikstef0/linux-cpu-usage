@@ -26,7 +26,8 @@ struct procdata_struct // structure for /proc/stat read date values
     long values[10]; // values: user, nice, sys... for each CPU core
 };
 
-typedef struct {
+typedef struct
+{
     struct procdata_struct data[MAX_Q_SIZE];
     int q_front;
     int q_rear;

@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <time.h>
+#include <errno.h>
 #include "global.h"
 #include "cut_queue.h"
 
@@ -27,10 +28,8 @@ int main()
     rd_old=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd_old)); // memory for previous values of above
     rd2=(struct procdata_struct*)malloc((1+procno)*sizeof(*rd2)); // memory for data read from queue and analyzed/printed
     CPU_Percentage=(float*)malloc((1+procno)*sizeof(CPU_Percentage));
-    
-    data_queue=(dq*)malloc((1+procno)*sizeof(*data_queue));
 
-    int thr_ret=1;
+    data_queue=(dq*)malloc((1+procno)*sizeof(*data_queue));
 
     sa_term.sa_handler=(void(*)(int))term;
     sigaction(SIGTERM, &sa_term, NULL);
@@ -39,49 +38,43 @@ int main()
 
     if(pthread_create(&watchdog_thr, NULL, (void *(*)(void *))watchdog_thread, NULL))
     {
-    fprintf(stderr, "Error creating watchdog thread! %d", thr_ret);
-    raise(SIGTERM);
+        fprintf(stderr, "Error creating watchdog thread! ErrNo: %d\n", errno);
+        raise(SIGTERM);
     }
-    
+
     if(pthread_create(&logger_thr, NULL, (void *(*)(void *))logger_thread, NULL))
-    if(thr_ret!=0)
     {
-        fprintf(stderr, "Error creating logger thread! %d", thr_ret);
+        fprintf(stderr, "Error creating logger thread! ErrNo: %d\n", errno);
         raise(SIGTERM);
     }
 
     if(pthread_create(&analyzer_thr, NULL, (void *(*)(void *))analyzer_thread, NULL))
-    if(thr_ret!=0)
-    {   
-        sprintf(logs, "Error creating analyzer thread! %d\n", thr_ret);
+    {
+        sprintf(logs, "Error creating analyzer thread! ErrNo: %d\n", errno);
         raise(SIGALRM);
-        fprintf(stderr, "Error creating analyzer thread! %d\n", thr_ret);
+        fprintf(stderr, "Error creating analyzer thread! ErrNo: %d\n", errno);
         raise(SIGTERM);
     }
 
     if(pthread_create(&printer_thr, NULL, (void *(*)(void *))printer_thread, NULL))
-    if(thr_ret!=0)
     {
-        sprintf(logs, "Error creating printer thread! %d\n", thr_ret);
+        sprintf(logs, "Error creating printer thread! ErrNo: %d\n", errno);
         raise(SIGALRM);
-        fprintf(stderr, "Error creating printer thread! %d\n", thr_ret);
+        fprintf(stderr, "Error creating printer thread! ErrNo: %d\n", errno);
         raise(SIGTERM);
     }
 
     if(pthread_create(&reader_thr, NULL, (void *(*)(void *))reader_thread, NULL))
-    if(thr_ret!=0)
     {
-        sprintf(logs, "Error creating reader thread! %d\n", thr_ret);
+        sprintf(logs, "Error creating reader thread! ErrNo: %d\n", errno);
         raise(SIGALRM);
-        fprintf(stderr, "Error creating reader thread! %d\n", thr_ret);
+        fprintf(stderr, "Error creating reader thread! ErrNo: %d\n", errno);
         raise(SIGTERM);
     }
-    
-
 
     while(terminate==0)
     {
-    sleep(1);
+        sleep(1);
     }
 
     return 0;
